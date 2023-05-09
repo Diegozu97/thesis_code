@@ -79,3 +79,47 @@ def model_evaluate(y_test, y_pred):
     plt.xlabel("Predicted values", fontdict = {'size':14}, labelpad = 10)
     plt.ylabel("Actual values"   , fontdict = {'size':14}, labelpad = 10)
     plt.title ("Confusion Matrix", fontdict = {'size':18}, pad = 20)
+    
+    
+def fix_data(df, date_column): 
+    for idx in tqdm(range(len(df))):
+        
+        current_date = pd.to_datetime(df[date_column].iloc[idx], errors='coerce')
+        
+        if current_date.weekday() == 6:
+            df.at[idx, date_column] = current_date + pd.Timedelta(days=2)
+        
+        elif current_date.weekday() == 7: 
+            
+            df.at[idx, date_column] = current_date + pd.Timedelta(days=1) 
+        else:
+            continue
+    
+    return df
+
+
+def plot_three_line_chart(df, x_col, y_col1, y_col2, y_col3):
+    # create a figure and an axis object
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    
+    # plot the first column on the primary y-axis
+    ax1.plot(df[x_col], df[y_col1], color='blue')
+    ax1.set_ylabel(y_col1)
+
+    # plot the third column on the primary y-axis
+    ax1.plot(df[x_col], df[y_col3], color='lightblue')
+    ax1.set_ylabel(y_col3)
+
+    # create a secondary y-axis
+    ax2 = ax1.twinx()
+
+    # plot the second column on the secondary y-axis
+    ax2.plot(df[x_col], df[y_col2], color='gray')
+    ax2.set_ylabel(y_col2)
+
+    # add a legend
+    ax1.legend([y_col1, y_col3], loc='upper left')
+    ax2.legend([y_col2], loc='upper right')
+
+    # show the plot
+    plt.show()
