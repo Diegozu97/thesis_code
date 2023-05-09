@@ -87,7 +87,7 @@ class Backtester:
     
     def get_n_days_rolling(self):
         if self.rolling_frq == '1M':
-            return 30
+            return 21
         elif self.rolling_frq == '1W':
             return 7
         elif self.rolling_frq == '1D':
@@ -168,7 +168,7 @@ class Backtester:
                 
                 # print("--------")
                 # print("out of sample")
-                # print(df_out_sample.datetime.head(1))
+                # print(df_out_sample.datetime)
                 # print("--------")
                 
                 if df_out_sample.empty:
