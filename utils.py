@@ -8,6 +8,8 @@ tqdm.pandas(desc="progress bar")
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+import datetime 
+from datetime import datetime, timedelta
 
 
 # Getting the correct thesis folder 
@@ -81,21 +83,22 @@ def model_evaluate(y_test, y_pred):
     plt.title ("Confusion Matrix", fontdict = {'size':18}, pad = 20)
     
     
-def fix_data(df, date_column): 
-    for idx in tqdm(range(len(df))):
-        
-        current_date = pd.to_datetime(df[date_column].iloc[idx], errors='coerce')
-        
-        if current_date.weekday() == 6:
-            df.at[idx, date_column] = current_date + pd.Timedelta(days=2)
-        
-        elif current_date.weekday() == 7: 
-            
-            df.at[idx, date_column] = current_date + pd.Timedelta(days=1) 
-        else:
-            continue
+def fix_dates(timestamp): 
     
-    return df
+    current_date = timestamp
+    # if  current_date.hour < 8: 
+    #     current_date = timestamp - timedelta(hours=current_date.hour)
+    
+    if current_date.weekday() == 5:
+        current_date +=  pd.Timedelta(days=2)
+        
+    elif current_date.weekday() == 6:
+        current_date +=  pd.Timedelta(days=1)
+            
+    else:
+        current_date = timestamp
+    
+    return current_date
 
 
 def plot_three_line_chart(df, x_col, y_col1, y_col2, y_col3):

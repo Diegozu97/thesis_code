@@ -73,6 +73,7 @@ class Backtester:
         self.dict_feature_importance = {}
         self.dict_feature_importance["random_forest"] = {}
         self.dict_feature_importance["xgboost"] = {}
+        self.model = sm
 
 
         for key in configurations.keys():
@@ -102,7 +103,8 @@ class Backtester:
             model = Lasso(alpha=alpha, max_iter=int(1e5))
             
         elif alpha_estimation_method == "RollingOLS":
-            model = LinearRegression(normalize=True)
+            model = self.model 
+            #model = LinearRegression(normalize=True)
             
         elif alpha_estimation_method == "Ridge":
             model = Ridge(alpha=alpha)
@@ -125,6 +127,8 @@ class Backtester:
         return model
     
     def run_backtest(self):
+        
+        self.df["constant"] = 1
     
         for dt in tqdm(pd.date_range(start=self.df['datetime'].min() + pd.Timedelta(days=self.look_back_prm),
                                 end=self.df['datetime'].max() - pd.Timedelta(days=self.get_n_days_rolling()+1), 
