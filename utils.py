@@ -85,7 +85,7 @@ def model_evaluate(y_test, y_pred):
     
 def fix_dates(timestamp): 
     
-    current_date = timestamp
+    current_date = pd.to_datetime(timestamp)
     # if  current_date.hour < 8: 
     #     current_date = timestamp - timedelta(hours=current_date.hour)
     
