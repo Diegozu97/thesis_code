@@ -1,15 +1,9 @@
-from __future__ import print_function
-
 import platform
 import time
 import tqdm 
 from tqdm import tqdm
 tqdm.pandas(desc='My bar!')
 
-# database access
-import pandas_datareader as web
-import quandl as quandl
-import wrds as wrds
 
 # storage and operations
 import pandas as pd
@@ -46,28 +40,22 @@ from multiprocessing import Pool, cpu_count
 import warnings 
 warnings.filterwarnings("ignore")
 
-pd.set_option('display.max_columns', None)
-
 class Backtester:
     
     def __init__(self,
                  df,
-                 params, 
                  modeling_features,
                  rolling_frw,
                  look_back_prm,
                  configurations,
-                 col_to_pred,
-                 days_avoid_bias
+                 col_to_pred
                  ):
         
         self.df = df
-        self.params = params
         self.modeling_features = modeling_features
         self.col_to_pred = col_to_pred
         self.rolling_frq = rolling_frw
         self.look_back_prm = look_back_prm
-        self.days_avoid_bias = days_avoid_bias
         self.configurations = configurations
         self.dict_all_predictions = {}
         self.dict_feature_importance = {}
@@ -103,8 +91,8 @@ class Backtester:
             model = Lasso(alpha=alpha, max_iter=int(1e5))
             
         elif alpha_estimation_method == "RollingOLS":
-            model = self.model 
-            #model = LinearRegression(normalize=True)
+            
+            model = LinearRegression(normalize=True)
             
         elif alpha_estimation_method == "Ridge":
             model = Ridge(alpha=alpha)
@@ -113,10 +101,8 @@ class Backtester:
             model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, max_iter=100000)
             
         elif alpha_estimation_method == "xgboost":
-            if self.params:
-                model = xgb.XGBRegressor(**self.params)
-            else: 
-                model = xgb.XGBRegressor(random_state = 42, n_jobs = -1)
+            
+            model = xgb.XGBRegressor(random_state = 42, n_jobs = -1)
             
         elif alpha_estimation_method == "random_forest": 
             model = RandomForestRegressor(random_state=0 , n_jobs=-1, max_features=int(1))
@@ -143,14 +129,8 @@ class Backtester:
                 # step1: restrict dataset to insample
                 df_r = df.loc[np.logical_and(
                     df['datetime'] >= dt - pd.Timedelta(days=self.look_back_prm), 
-                    df['datetime'] < dt - pd.Timedelta(days=self.days_avoid_bias)), :].copy()
-                
-                
-                # print("--------")
-                # print("in of sample")
-                # print(df_r.datetime.tail(-1))
-                # print("--------")
-                
+                    df['datetime'] < dt), :].copy()
+
                 # step3: run alpha estimation method
                 try: 
                     alpha = cfg['alpha']
@@ -169,11 +149,6 @@ class Backtester:
                 df_out_sample = df.loc[np.logical_and(
                     df['datetime'] >= dt, 
                     df['datetime'] < dt + pd.Timedelta(days=self.get_n_days_rolling())), :].copy()
-                
-                # print("--------")
-                # print("out of sample")
-                # print(df_out_sample.datetime)
-                # print("--------")
                 
                 if df_out_sample.empty:
                     continue
