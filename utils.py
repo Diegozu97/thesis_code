@@ -42,7 +42,7 @@ def plot_variables(check, column_name1, column_name2):
 
     # add a legend
     ax1.legend([column_name1], loc='upper left')
-    ax2.legend([column_name2], loc='upper right')
+    ax2.legend([column_name2], loc='upper left')
 
     # show the plot
     plt.show()
@@ -101,18 +101,14 @@ def fix_dates(timestamp):
     return current_date
 
 
-def plot_three_line_chart(df, x_col, y_col1, y_col2, y_col3):
+def plot_three_line_chart(df, x_col, y_col1, y_col2):
     # create a figure and an axis object
     fig, ax1 = plt.subplots(figsize=(12, 6))
     
     # plot the first column on the primary y-axis
     ax1.plot(df[x_col], df[y_col1], color='blue')
     ax1.set_ylabel(y_col1)
-
-    # plot the third column on the primary y-axis
-    ax1.plot(df[x_col], df[y_col3], color='lightblue')
-    ax1.set_ylabel(y_col3)
-
+    
     # create a secondary y-axis
     ax2 = ax1.twinx()
 
@@ -121,8 +117,8 @@ def plot_three_line_chart(df, x_col, y_col1, y_col2, y_col3):
     ax2.set_ylabel(y_col2)
 
     # add a legend
-    ax1.legend([y_col1, y_col3], loc='upper left')
-    ax2.legend([y_col2], loc='upper right')
+    ax1.legend([y_col1], loc='upper left')
+    ax2.legend([y_col2], loc='lower left')
 
     # show the plot
     plt.show()
