@@ -1,9 +1,15 @@
+from __future__ import print_function
+
 import platform
 import time
 import tqdm 
 from tqdm import tqdm
 tqdm.pandas(desc='My bar!')
 
+# database access
+import pandas_datareader as web
+import quandl as quandl
+import wrds as wrds
 
 # storage and operations
 import pandas as pd
@@ -39,6 +45,8 @@ from multiprocessing import Pool, cpu_count
 
 import warnings 
 warnings.filterwarnings("ignore")
+
+pd.set_option('display.max_columns', None)
 
 class Backtester:
     
@@ -85,27 +93,26 @@ class Backtester:
             print('rolling_frq not supported: ' + self.rolling_frq)
 
     
-    def alpha_estimation(self, df_r, alpha_estimation_method, alpha: None, l1_ratio: None):
+    def alpha_estimation(self, df_r, alpha_estimation_method):
         
         if alpha_estimation_method == "Lasso": 
-            model = Lasso(alpha=alpha, max_iter=int(1e5))
+            model = Lasso(max_iter=int(1e5))
             
         elif alpha_estimation_method == "RollingOLS":
-            
             model = LinearRegression(normalize=True)
             
         elif alpha_estimation_method == "Ridge":
-            model = Ridge(alpha=alpha)
+            model = Ridge()
             
         elif alpha_estimation_method == "ElasticNet":
-            model = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, max_iter=100000)
+            model = ElasticNet(max_iter=100000)
             
         elif alpha_estimation_method == "xgboost":
-            
-            model = xgb.XGBRegressor(random_state = 42, n_jobs = -1)
+ 
+            model = xgb.XGBRegressor(random_state = 42, n_jobs = -1, verbosity = 0)
             
         elif alpha_estimation_method == "random_forest": 
-            model = RandomForestRegressor(random_state=0 , n_jobs=-1, max_features=int(1))
+            model = RandomForestRegressor(random_state=0 , n_jobs=-1)
             
         # Fit the model
         model.fit(df_r[self.modeling_features], df_r[self.col_to_pred])
@@ -129,26 +136,26 @@ class Backtester:
                 # step1: restrict dataset to insample
                 df_r = df.loc[np.logical_and(
                     df['datetime'] >= dt - pd.Timedelta(days=self.look_back_prm), 
-                    df['datetime'] < dt), :].copy()
-
+                    df['datetime'] < dt ), :].copy()
+                
+                
+                # print("--------")
+                # print("in of sample")
+                # print(df_r.datetime.tail(-1))
+                # print("--------")
+                
                 # step3: run alpha estimation method
-                try: 
-                    alpha = cfg['alpha']
-                except:
-                    alpha = None   
-                
-                try:   
-                    l1_ratio = cfg['l1_ratio']
-
-                except:
-                    l1_ratio = None
-                
-                model = self.alpha_estimation(df_r, cfg['alpha_estimation_method'], alpha, l1_ratio)
+                model = self.alpha_estimation(df_r, cfg['alpha_estimation_method'])
 
                 # step4: set out of sample period 
                 df_out_sample = df.loc[np.logical_and(
                     df['datetime'] >= dt, 
                     df['datetime'] < dt + pd.Timedelta(days=self.get_n_days_rolling())), :].copy()
+                
+                # print("--------")
+                # print("out of sample")
+                # print(df_out_sample.datetime)
+                # print("--------")
                 
                 if df_out_sample.empty:
                     continue
