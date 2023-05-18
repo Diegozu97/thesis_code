@@ -26,9 +26,6 @@ import seaborn as sns
 from statsmodels.regression.rolling import RollingOLS
 from sklearn.linear_model import Lasso, ElasticNet, Ridge, LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-from scipy.stats.mstats import winsorize
-from scipy.optimize import minimize
-from sklearn.preprocessing import MaxAbsScaler, PowerTransformer, MinMaxScaler, QuantileTransformer, RobustScaler
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn import set_config
 from sklearn.base import BaseEstimator, TransformerMixin, clone # How to create our own scaler 
@@ -152,10 +149,6 @@ class Backtester:
                     df['datetime'] >= dt, 
                     df['datetime'] < dt + pd.Timedelta(days=self.get_n_days_rolling())), :].copy()
                 
-                # print("--------")
-                # print("out of sample")
-                # print(df_out_sample.datetime)
-                # print("--------")
                 
                 if df_out_sample.empty:
                     continue
