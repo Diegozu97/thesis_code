@@ -10,6 +10,7 @@ import seaborn as sns
 import numpy as np
 import datetime 
 from datetime import datetime, timedelta
+from sklearn.metrics import accuracy_score, precision_score, f1_score, recall_score, mean_absolute_percentage_error
 
 
 # Getting the correct thesis folder 
@@ -122,3 +123,48 @@ def plot_three_line_chart(df, x_col, y_col1, y_col2):
 
     # show the plot
     plt.show()
+    
+    
+def retrieve_results(df, target_column, model_config, senti_var):
+    
+    company = "moderna"
+    target = target_column
+    variables = "all"
+    sentiment = senti_var
+    model = "xgboost"
+    comments = "permutations"
+
+    counter = 0
+    backtester = bk(df = df,
+                    modeling_features = modelling_ft,
+                    rolling_frw = '1D',
+                    look_back_prm = 252, 
+                    configurations= model_config, 
+                    col_to_pred = target_column)
+
+    backtester.run_backtest()
+    track_results = {}
+    resutls_df = backtester.dict_all_predictions["model"][["datetime", "ft_target","ft_target_pred"]]
+    resutls_df['y_test'] = (resutls_df['ft_target'] > resutls_df['ft_target'].shift()).astype(int)
+    resutls_df['y_test'] = resutls_df['y_test'].fillna(0)
+    resutls_df['y_pred'] = (resutls_df['ft_target_pred'] > resutls_df['ft_target_pred'].shift()).astype(int)
+    resutls_df['y_pred'] = resutls_df['y_pred'].fillna(0)
+    resutls_df = resutls_df.set_index("datetime")
+    track_results["trial_"+str(counter)] = {}
+    track_results["trial_"+str(counter)]["company"] = company
+    track_results["trial_"+str(counter)]["target"] = target
+    track_results["trial_"+str(counter)]["variables"] = variables
+    track_results["trial_"+str(counter)]["sentiment"] = sentiment
+    track_results["trial_"+str(counter)]["model"] = model
+    track_results["trial_"+str(counter)]["comments"] = comments
+    track_results["trial_"+str(counter)]["precision"] = precision_score(resutls_df["y_test"], resutls_df["y_pred"])
+    track_results["trial_"+str(counter)]["recall"] = recall_score(resutls_df["y_test"], resutls_df["y_pred"])
+    track_results["trial_"+str(counter)]["accuracy"] = accuracy_score(resutls_df["y_test"], resutls_df["y_pred"])
+    track_results["trial_"+str(counter)]["f1_score"] = f1_score(resutls_df["y_test"], resutls_df["y_pred"])
+    track_results["trial_"+str(counter)]["mae"] = round(mean_absolute_percentage_error(resutls_df.iloc[:,:2]["ft_target"], resutls_df.iloc[:,:2]["ft_target_pred"]),5)*100
+    track_results["trial_"+str(counter)]["datetime"] = list(resutls_df["ft_target"].index)
+    track_results["trial_"+str(counter)]["y_test"] = list(resutls_df["ft_target"].values)
+    track_results["trial_"+str(counter)]["y_pred"] = list(resutls_df["ft_target_pred"].values)
+    results_df = pd.DataFrame.from_dict(track_results, orient='index')
+    
+    return results_df
