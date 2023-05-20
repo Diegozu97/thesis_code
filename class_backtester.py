@@ -136,11 +136,6 @@ class Backtester:
                     df['datetime'] < dt ), :].copy()
                 
                 
-                # print("--------")
-                # print("in of sample")
-                # print(df_r.datetime.tail(-1))
-                # print("--------")
-                
                 # step3: run alpha estimation method
                 model = self.alpha_estimation(df_r, cfg['alpha_estimation_method'])
 
