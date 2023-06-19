@@ -24,7 +24,8 @@ import seaborn as sns
 
 # Statistical Analysis Libraries 
 from statsmodels.regression.rolling import RollingOLS
-from sklearn.linear_model import Lasso, ElasticNet, Ridge, LinearRegression
+from sklearn.linear_model import Lasso, ElasticNet, Ridge, LinearRegression 
+from sklearn import svm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import make_pipeline, Pipeline
 from sklearn import set_config
@@ -111,6 +112,9 @@ class Backtester:
         elif alpha_estimation_method == "random_forest": 
             model = RandomForestRegressor(random_state=0 , n_jobs=-1)
             
+        elif alpha_estimation_method == "support_vector":
+            model = svm.SVR()
+
         # Fit the model
         model.fit(df_r[self.modeling_features], df_r[self.col_to_pred])
         
