@@ -25,10 +25,8 @@ import seaborn as sns
 # Statistical Analysis Libraries 
 from statsmodels.regression.rolling import RollingOLS
 from sklearn.linear_model import Lasso, ElasticNet, Ridge, LinearRegression 
-from sklearn import svm
+from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn import set_config
 from sklearn.base import BaseEstimator, TransformerMixin, clone # How to create our own scaler 
 import statsmodels.api as sm
 import linearmodels as lm 
@@ -100,23 +98,25 @@ class Backtester:
             model = LinearRegression(normalize=True)
             
         elif alpha_estimation_method == "Ridge":
-            model = Ridge()
+            model = Ridge(alpha = 1)
             
         elif alpha_estimation_method == "ElasticNet":
             model = ElasticNet(max_iter=100000)
             
         elif alpha_estimation_method == "xgboost":
- 
             model = xgb.XGBRegressor(random_state = 42, n_jobs = -1, verbosity = 0)
             
         elif alpha_estimation_method == "random_forest": 
             model = RandomForestRegressor(random_state=0 , n_jobs=-1)
             
         elif alpha_estimation_method == "support_vector":
-            model = svm.SVR()
-
+            model = SVR(kernel='sigmoid')
+            
         # Fit the model
-        model.fit(df_r[self.modeling_features], df_r[self.col_to_pred])
+        try:
+            model.fit(df_r[self.modeling_features], df_r[self.col_to_pred])
+        except:
+            None
         
         return model
     
@@ -133,15 +133,16 @@ class Backtester:
                 ### ASSIGN CONFIGURATION PARAMETERS #########
                 #############################################
                 df = self.df 
-
                 # step1: restrict dataset to insample
                 df_r = df.loc[np.logical_and(
                     df['datetime'] >= dt - pd.Timedelta(days=self.look_back_prm), 
                     df['datetime'] < dt ), :].copy()
                 
-                
                 # step3: run alpha estimation method
-                model = self.alpha_estimation(df_r, cfg['alpha_estimation_method'])
+                try:
+                    model = self.alpha_estimation(df_r, cfg['alpha_estimation_method'])
+                except:
+                    model
 
                 # step4: set out of sample period 
                 df_out_sample = df.loc[np.logical_and(
