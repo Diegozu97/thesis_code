@@ -65,6 +65,7 @@ class Backtester:
         self.dict_feature_importance = {}
         self.dict_feature_importance["random_forest"] = {}
         self.dict_feature_importance["xgboost"] = {}
+        self.dict_feature_importance["Ridge"] = {}
         self.model = sm
 
 
@@ -163,4 +164,11 @@ class Backtester:
                 if cfg['alpha_estimation_method'] in ['xgboost', 'random_forest']:
                     key = str(list(df_out_sample['datetime'].unique())[0])
                     # saving the feature importance for insample data in a dictionary
-                    self.dict_feature_importance[cfg['alpha_estimation_method']][key] = dict(zip(self.modeling_features, list(model.feature_importances_)))    
+                    self.dict_feature_importance[cfg['alpha_estimation_method']][key] = dict(zip(self.modeling_features, list(model.feature_importances_)))
+                
+                if cfg['alpha_estimation_method'] == "Ridge":
+                    key = str(list(df_out_sample['datetime'].unique())[0])
+                    self.dict_feature_importance[cfg['alpha_estimation_method']][key] = dict(zip(self.modeling_features, list(model.coef_)))
+                
+                     
+                    
